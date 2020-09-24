@@ -3,6 +3,7 @@ package binance
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jwangsadinata/go-multimap/slicemultimap"
 	"strings"
 	"time"
 )
@@ -109,10 +110,14 @@ func WsCombinedPartialDepthServe(symbolLevels map[string]string, handler WsParti
 }
 
 // WsCombinedKlineServe is similar to WsKlineServe but for multiple symbols
-func WsCombinedKlineServe(symbolLevels map[string]string, handler WsKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+func WsCombinedKlineServe(symbols *slicemultimap.MultiMap, handler WsKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
 	endpoint := combinedBaseURL
-	for s, l := range symbolLevels {
-		endpoint += fmt.Sprintf("%s@kline_%s", strings.ToLower(s), l) + "/"
+	for _, symbol := range symbols.KeySet() {
+		intervals, _ := symbols.Get(symbol)
+		for _, interval := range intervals {
+			s := symbol.(string)
+			endpoint += fmt.Sprintf("%s@kline_%s", strings.ToLower(s), interval) + "/"
+		}
 	}
 	endpoint = endpoint[:len(endpoint)-1]
 	cfg := newWsConfig(endpoint)

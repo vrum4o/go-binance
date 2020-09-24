@@ -2,7 +2,10 @@ package binance
 
 import (
 	"errors"
+	"fmt"
+	"github.com/jwangsadinata/go-multimap/slicemultimap"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -321,23 +324,23 @@ func (s *websocketServiceTestSuite) TestKlineServe() {
 	stopC <- struct{}{}
 	<-doneC
 }
-/*
+
 func (s *websocketServiceTestSuite) TestCombinedKlineServe() {
-	symbolLevels := map[string]string{
-		"BTCUSDT": "15min",
-		"ETHUSDT": "1d",
-	}
+	symbolLevels := slicemultimap.New()
+	symbolLevels.Put("ETHUSDT", "1d")
+	symbolLevels.Put("ETHUSDT", "1h")
 	doneC, stopC, _ := WsCombinedKlineServe(symbolLevels, func(event *WsKlineEvent) {
 		fmt.Println(event)
 	}, func(err error) {
 		fmt.Println(err)
 	})
 
+	time.Sleep(20 * time.Second)
 
 	stopC <- struct{}{}
 	<-doneC
 }
-*/
+
 func (s *websocketServiceTestSuite) assertWsKlineEventEqual(e, a *WsKlineEvent) {
 	r := s.r()
 	r.Equal(e.Event, a.Event, "Event")
