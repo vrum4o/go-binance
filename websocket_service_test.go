@@ -321,7 +321,23 @@ func (s *websocketServiceTestSuite) TestKlineServe() {
 	stopC <- struct{}{}
 	<-doneC
 }
+/*
+func (s *websocketServiceTestSuite) TestCombinedKlineServe() {
+	symbolLevels := map[string]string{
+		"BTCUSDT": "15min",
+		"ETHUSDT": "1d",
+	}
+	doneC, stopC, _ := WsCombinedKlineServe(symbolLevels, func(event *WsKlineEvent) {
+		fmt.Println(event)
+	}, func(err error) {
+		fmt.Println(err)
+	})
 
+
+	stopC <- struct{}{}
+	<-doneC
+}
+*/
 func (s *websocketServiceTestSuite) assertWsKlineEventEqual(e, a *WsKlineEvent) {
 	r := s.r()
 	r.Equal(e.Event, a.Event, "Event")

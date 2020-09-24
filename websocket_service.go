@@ -108,6 +108,26 @@ func WsCombinedPartialDepthServe(symbolLevels map[string]string, handler WsParti
 	return wsServe(cfg, wsHandler, errHandler)
 }
 
+// WsCombinedKlineServe is similar to WsKlineServe but for multiple symbols
+func WsCombinedKlineServe(symbolLevels map[string]string, handler WsKlineHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := combinedBaseURL
+	for s, l := range symbolLevels {
+		endpoint += fmt.Sprintf("%s@kline_%s", strings.ToLower(s), l) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsCombinedKlineEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+
+		handler(&event.Event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
 // WsDepthHandler handle websocket depth event
 type WsDepthHandler func(event *WsDepthEvent)
 
@@ -186,6 +206,11 @@ type WsKlineEvent struct {
 	Time   int64   `json:"E"`
 	Symbol string  `json:"s"`
 	Kline  WsKline `json:"k"`
+}
+
+type WsCombinedKlineEvent struct {
+	Symbol  string  `json:"stream"`
+	Event   WsKlineEvent   `json:"data"`
 }
 
 // WsKline define websocket kline
